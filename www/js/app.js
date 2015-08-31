@@ -17,18 +17,43 @@ var app = angular.module('starter', ['ionic'])
   });
 })
 
-app.controller('MainCtrl', ['$scope', '$http', function($scope, $http) {
+// MainCtrl is quite literally the main controller
+app.controller('MainCtrl', ['$scope', '$http', '$ionicPopup', function($scope, $http, $ionicPopup) {
+    // This is the message that initially shows when you open the app
     $scope.message = "Your information will appear here when you click that big yellow button";
+    // A boolean for whether the scope has changed
     $scope.changed = false; 
-    $scope.fetching = false
-
+    // A variable which is used to tell whether to show the loading icon or not
+    $scope.fetching = false;
+    
+    // go is a function to get a fact from http://numbersapi.com to do with the date the user has selected
     $scope.go = function() {
+        // Check that the date is __partially__ valid.
+        var day = $scope.day;
+        var month = $scope.month;
+
+        if (day > 31 || month > 12) {
+           $ionicPopup.alert({
+               title: 'Uh Oh!',
+               content: 'That isn\'t a valid day!'
+           }).then(function(res) {
+               console.log('Test Alert Box');
+           }); 
+
+           return;
+        }
+
+        // We are fetching data, show loader
         $scope.fetching = true;
-        $http.get('http://numbersapi.com/' + $scope.month + '/' + $scope.day + '/date?json')
+        
+        // Make a HTTP request to get the relevant information for that day
+        $http.get('http://numbersapi.com/' + month + '/' + day + '/date')
             .then(function(resp) {
-                console.log(resp);
-                $scope.message = resp.data.text;
+                // Set the message to the HTTP response
+                $scope.message = resp.data;
+                // We are no longer fetching, hide loader
                 $scope.fetching = false;
+                // The text has been changed; stop greying it out
                 $scope.changed = true;
             });
     }
